@@ -1,0 +1,147 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>¿Qué comemos hoy? ❤️</title>
+<style>
+:root{--bg:#fff8f7;--card:#fff;--ink:#30272a;--muted:#7c6d71;--rose:#e85d75;--rose2:#ff9caf;--line:#f0dfe2;--soft:#fff0f2;--good:#d96a7d}
+*{box-sizing:border-box} body{margin:0;background:linear-gradient(145deg,#fff7f8,#fffdfb);color:var(--ink);font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Arial,sans-serif}
+main{max-width:620px;margin:auto;padding:22px 16px 50px}.hero{text-align:center;padding:18px 8px 12px}.heart{font-size:34px}.hero h1{font-size:30px;margin:8px 0 6px;letter-spacing:-.7px}.hero p{margin:0;color:var(--muted);font-size:15px;line-height:1.45}
+.card{background:var(--card);border:1px solid var(--line);border-radius:24px;padding:20px;box-shadow:0 10px 35px rgba(80,30,40,.07);margin-top:16px}
+.hidden{display:none!important}.progress{height:7px;background:#f6e5e8;border-radius:99px;overflow:hidden;margin-bottom:22px}.bar{height:100%;width:0;background:linear-gradient(90deg,var(--rose),var(--rose2));transition:.25s}
+.step{color:var(--muted);font-size:13px;margin-bottom:7px}.q{font-size:21px;font-weight:750;line-height:1.25;margin:0 0 15px}
+.grid{display:grid;grid-template-columns:1fr 1fr;gap:10px}.opt{border:1px solid var(--line);background:#fff;border-radius:16px;padding:14px 11px;text-align:left;font-size:15px;cursor:pointer;min-height:58px;color:var(--ink);transition:.15s}.opt:hover{border-color:#efabb7}.opt.sel{background:var(--soft);border:2px solid var(--rose);padding:13px 10px}.emoji{font-size:21px;display:block;margin-bottom:5px}
+.actions{display:flex;gap:10px;margin-top:18px}.btn{flex:1;border:0;border-radius:16px;padding:14px 16px;font-weight:750;font-size:15px;cursor:pointer}.primary{background:var(--rose);color:#fff}.secondary{background:#f8eef0;color:var(--ink)}.btn:disabled{opacity:.4;cursor:not-allowed}
+.note{font-size:12px;color:var(--muted);text-align:center;margin-top:12px;line-height:1.4}
+.codebox{background:#fff5f6;border:1px dashed #eaa4b0;border-radius:16px;padding:14px;text-align:center;margin-top:14px}.code{font-weight:800;letter-spacing:1px;font-size:18px}.share{width:100%;margin-top:10px}
+.resultHero{text-align:center;padding:8px}.resultHero .big{font-size:44px}.resultHero h2{font-size:27px;margin:5px 0}.resultHero p{color:var(--muted);line-height:1.45;margin:8px 0}
+.match{background:var(--soft);border-radius:18px;padding:16px;margin-top:14px}.match strong{font-size:18px}.chips{display:flex;flex-wrap:wrap;gap:7px;margin-top:10px}.chip{background:#fff;border:1px solid var(--line);padding:7px 10px;border-radius:99px;font-size:13px}
+.footer{text-align:center;color:#9a858b;font-size:12px;margin-top:20px}
+@media(max-width:430px){.grid{grid-template-columns:1fr}.hero h1{font-size:27px}}
+</style>
+</head>
+<body>
+<main>
+<section class="hero">
+  <div class="heart">♥</div>
+  <h1>¿Qué comemos hoy?</h1>
+  <p>Un mini quiz para que los dos decidan sin discutir. 😌</p>
+</section>
+
+<div id="intro" class="card">
+  <h2 style="margin-top:0">Primero, escojan su papel</h2>
+  <p style="color:var(--muted);line-height:1.5">Una persona responde primero y comparte el enlace. La otra responde y descubre qué tienen en común.</p>
+  <div class="actions">
+    <button class="btn primary" onclick="start('A')">Yo respondo primero</button>
+    <button class="btn secondary" onclick="start('B')">Me mandaron un enlace</button>
+  </div>
+  <p class="note">No guarda nombres ni datos personales. Las respuestas viajan dentro del enlace.</p>
+</div>
+
+<div id="quiz" class="card hidden">
+  <div class="progress"><div id="bar" class="bar"></div></div>
+  <div id="step" class="step"></div>
+  <h2 id="question" class="q"></h2>
+  <div id="options" class="grid"></div>
+  <div class="actions">
+    <button id="back" class="btn secondary" onclick="prev()">Atrás</button>
+    <button id="next" class="btn primary" onclick="next()" disabled>Continuar</button>
+  </div>
+</div>
+
+<div id="share" class="card hidden">
+  <div class="resultHero"><div class="big">💌</div><h2>Ahora le toca a tu pareja</h2><p>Comparte este enlace. Ella/él responderá sus preferencias y la página encontrará el punto medio.</p></div>
+  <button class="btn primary share" onclick="shareLink()">Compartir enlace</button>
+  <div class="codebox"><div style="font-size:12px;color:var(--muted)">Si compartir no funciona, copia este enlace:</div><div id="shareUrl" style="word-break:break-all;font-size:11px;margin-top:7px"></div></div>
+</div>
+
+<div id="result" class="card hidden"></div>
+<div class="footer">Hecho para ponerse de acuerdo con amor ❤️</div>
+</main>
+
+<script>
+const qs=[
+ {q:"¿Qué plan les provoca más hoy?",o:[["🍝","Una cena tranquila"],["🍔","Algo casual y rico"],["🍣","Probar algo diferente"],["🌮","Algo divertido y antojado"]],k:"vibe"},
+ {q:"¿Qué categoría gana puntos hoy?",o:[["🇮🇹","Italiana"],["🇲🇽","Mexicana"],["🍔","Hamburguesas"],["🍣","Sushi / asiática"],["🥩","Carnes / BBQ"],["🇨🇷","Comida tica"],["🍗","Pollo / alitas"],["🥗","Saludable"]],k:"cat"},
+ {q:"¿Qué tan abiertos están a probar algo?",o:[["❤️","Mi favorito de siempre"],["✨","Algo parecido"],["🌎","Algo nuevo"],["🎲","Sorpréndeme"]],k:"new"},
+ {q:"¿Qué importa más para escoger?",o:[["😋","Que sea delicioso"],["💸","Que valga la pena"],["🕯️","Que sea bonito / romántico"],["📍","Que quede cómodo"]],k:"priority"},
+ {q:"¿Qué rango de precio les parece bien por persona?",o:[["₡","Económico"],["₡₡","Medio"],["₡₡₡","Me doy un gusto"],["💎","Hoy no importa tanto"]],k:"budget"},
+ {q:"¿Qué se les antoja más?",o:[["🍕","Pizza / pasta"],["🍔","Burger / papas"],["🌮","Tacos / burritos"],["🍣","Sushi / ramen"],["🥩","Carne / parrilla"],["🍗","Pollo / alitas"],["🍛","Arroz / platos fuertes"],["🍰","Café / postre"]],k:"food"}
+];
+let role=null, idx=0, answers={};
+
+function getParam(){
+ const p=new URLSearchParams(location.search); return p.get('p');
+}
+function decode(s){try{return JSON.parse(decodeURIComponent(atob(s)))}catch(e){return null}}
+function encode(o){return btoa(encodeURIComponent(JSON.stringify(o)))}
+function start(r){
+ role=r;
+ if(r==='B'){
+   const p=getParam();
+   const first=p?decode(p):null;
+   if(first) answers.first=first; else {alert("Ese enlace no parece válido. Pídele a tu pareja que te lo vuelva a compartir.");return}
+ }
+ idx=0; answers.current={}; document.getElementById('intro').classList.add('hidden'); document.getElementById('quiz').classList.remove('hidden'); render();
+}
+function render(){
+ const q=qs[idx], cur=answers.current[q.k];
+ document.getElementById('step').textContent=`Pregunta ${idx+1} de ${qs.length}`;
+ document.getElementById('bar').style.width=((idx+1)/qs.length*100)+'%';
+ document.getElementById('question').textContent=q.q;
+ const box=document.getElementById('options'); box.innerHTML='';
+ q.o.forEach((x,i)=>{
+   const b=document.createElement('button'); b.className='opt'+(cur===i?' sel':'');
+   b.innerHTML=`<span class="emoji">${x[0]}</span>${x[1]}`;
+   b.onclick=()=>{answers.current[q.k]=i; render()};
+   box.appendChild(b);
+ });
+ document.getElementById('back').disabled=idx===0;
+ document.getElementById('next').disabled=cur===undefined;
+ document.getElementById('next').textContent=idx===qs.length-1?'Ver resultado':'Continuar';
+}
+function next(){if(answers.current[qs[idx].k]===undefined)return;if(idx<qs.length-1){idx++;render()}else finish()}
+function prev(){if(idx>0){idx--;render()}}
+function finish(){
+ if(role==='A'){
+   const payload=encode(answers.current);
+   const url=location.origin+location.pathname+'?p='+encodeURIComponent(payload);
+   document.getElementById('quiz').classList.add('hidden');document.getElementById('share').classList.remove('hidden');
+   document.getElementById('shareUrl').textContent=url;
+ }else{
+   showResult(answers.first,answers.current);
+ }
+}
+function shareLink(){
+ const url=document.getElementById('shareUrl').textContent;
+ if(navigator.share) navigator.share({title:'¿Qué comemos hoy? ❤️',text:'Haz este quiz conmigo y veamos qué nos provoca comer.',url});
+ else navigator.clipboard.writeText(url).then(()=>alert('¡Enlace copiado! Ahora mándaselo ❤️')).catch(()=>alert('Copia el enlace manualmente.'));
+}
+function showResult(a,b){
+ let score=0, same=[], suggestions=[];
+ qs.forEach(q=>{
+   const x=a[q.k],y=b[q.k];
+   if(x===y){score++;same.push(q.o[x][1])}
+ });
+ const catA=qs[1].o[a.cat]?.[1],catB=qs[1].o[b.cat]?.[1];
+ const foodA=qs[5].o[a.food]?.[1],foodB=qs[5].o[b.food]?.[1];
+ const budget=qs[4].o[a.budget]?.[1]===qs[4].o[b.budget]?.[1] ? qs[4].o[a.budget][1] : "un punto medio";
+ if(catA===catB) suggestions.push(catA);
+ else if(foodA===foodB) suggestions.push(foodA);
+ else suggestions.push(catA+" o "+catB);
+ if(a.vibe===b.vibe) suggestions.push(qs[0].o[a.vibe][1]);
+ if(a.priority===b.priority) suggestions.push(qs[3].o[a.priority][1]);
+ const pct=Math.round(score/qs.length*100);
+ let title=pct>=75?"¡Casi estaban pensando lo mismo! 🥰":pct>=50?"Tienen bastante en común 💕":"Aquí hay negociación... pero hay solución 😏";
+ document.getElementById('quiz').classList.add('hidden');document.getElementById('result').classList.remove('hidden');
+ document.getElementById('result').innerHTML=`
+ <div class="resultHero"><div class="big">❤️</div><h2>${title}</h2><p>Coincidieron en <b>${score} de ${qs.length}</b> decisiones.</p></div>
+ <div class="match"><strong>La mejor apuesta para hoy</strong><div class="chips">${suggestions.slice(0,3).map(s=>`<span class="chip">${s}</span>`).join('')}</div></div>
+ <div class="match"><strong>Presupuesto</strong><p style="margin:7px 0 0;color:var(--muted)">${budget}</p></div>
+ <div class="match"><strong>Lo que sí comparten</strong><div class="chips">${same.length?same.map(s=>`<span class="chip">✓ ${s}</span>`).join(''):'<span class="chip">Necesitan una tercera opción 😄</span>'}</div></div>
+ <div class="actions"><button class="btn primary" onclick="location.href=location.pathname">Jugar otra vez</button></div>`;
+}
+</script>
+</body>
+</html>
